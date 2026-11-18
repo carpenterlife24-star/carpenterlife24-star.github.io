@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="EZ Price">
+<title>EasyStumps Price Sheet</title>
+<style>
+body{font-family:-apple-system,system-ui,sans-serif;margin:0;background:#f4f5f2;color:#1b1f1a}
+header{background:#2f5d34;color:#fff;padding:16px 18px}
+header h1{margin:0;font-size:20px} header p{margin:4px 0 0;font-size:13px;opacity:.85}
+main{padding:14px;max-width:560px;margin:auto}
+.card{background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+label{display:block;font-size:13px;font-weight:600;margin:10px 0 4px}
+input,select{width:100%;box-sizing:border-box;font-size:18px;padding:10px;border:1px solid #ccc;border-radius:10px}
+.guys{display:flex;flex-wrap:wrap;gap:6px}
+.guys button{flex:1 0 28%;font-size:16px;padding:10px;border:1px solid #2f5d34;background:#fff;color:#2f5d34;border-radius:10px}
+.guys button.on{background:#2f5d34;color:#fff}
+.sat{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:16px}
+.sat input{width:24px;height:24px}
+.total{text-align:center}.total .big{font-size:42px;font-weight:800;color:#2f5d34}
+table{width:100%;border-collapse:collapse;font-size:14px}td{padding:6px 2px;border-bottom:1px solid #eee}td:last-child{text-align:right}
+.note{font-size:13px;color:#555}
+</style></head><body>
+<header><h1>EasyStumps Price Sheet</h1><p>$230 per guy per hour · $550 minimum</p></header>
+<main>
+<div class="card">
+<label>Crew size</label>
+<select id="crew"><option value="2">2 guys</option><option value="3" selected>3 guys</option><option value="4">4 guys</option><option value="5">5 guys</option><option value="6">6 guys</option><option value="7">7 guys</option></select>
+<div class="sat"><input type="checkbox" id="sat"><span>Saturday job ($835 per guy minimum)</span></div>
+<label>Hours on site</label><input id="hours" type="number" inputmode="decimal" value="4">
+<label>Round hours up to</label>
+<select id="round"><option value="0.5">Next half hour</option><option value="1">Next full hour</option><option value="0">No rounding</option></select>
+</div>
+<div class="card">
+<label>Dump or haul fee ($)</label><input id="dump" type="number" inputmode="decimal" value="0">
+<label>Permit fee ($)</label><input id="permit" type="number" inputmode="decimal" value="0">
+<label>Other, like a crane or rental ($)</label><input id="other" type="number" inputmode="decimal" value="0">
+</div>
+<div class="card total"><div>Total to quote</div><div class="big" id="total">$0</div><table id="lines"></table></div>
+<div class="card"><b>Quick price chart</b> <span class="note">(before fees)</span><table id="chart"></table></div>
+<div class="card note">Count hours from arrival until cleanup is done. If unsure, round up. A Sacramento County encroachment permit is $365.75. Put the total into Jobber as the quote amount.</div>
+</main>
+<script>
+const RATE=230,MIN=550,SAT=835;let g=3;
+const $=id=>document.getElementById(id),n=id=>Math.max(0,parseFloat($(id).value)||0),m=v=>"$"+Math.round(v).toLocaleString("en-US");
+function calc(){g=parseInt($("crew").value,10);
+const r=$("round").value,raw=n("hours");const h=r==="0.5"?Math.ceil(raw*2)/2:r==="1"?Math.ceil(raw):raw;
+const labor=RATE*g*h,sat=$("sat").checked,min=sat?Math.max(MIN,SAT*g):MIN,lf=Math.max(labor,min),fees=n("dump")+n("permit")+n("other");
+$("total").textContent=m(lf+fees);
+let t=`<tr><td>${g} guys × ${h} hrs × $230</td><td>${m(labor)}</td></tr>`;
+if(lf>labor)t+=`<tr><td>${sat?"Saturday minimum":"Job minimum"} applied</td><td>${m(lf)}</td></tr>`;
+if(fees>0)t+=`<tr><td>Fees</td><td>${m(fees)}</td></tr>`;$("lines").innerHTML=t;
+let c="<tr><td></td><td>1h</td><td>2h</td><td>4h</td><td>6h</td><td>8h</td></tr>";
+[2,3,4,5,6,7].forEach(k=>{c+=`<tr><td>${k} guys</td>`+[1,2,4,6,8].map(x=>`<td>${m(Math.max(RATE*k*x,MIN))}</td>`).join("")+"</tr>"});$("chart").innerHTML=c}
+document.querySelectorAll("input,select").forEach(e=>{e.addEventListener("input",calc);e.addEventListener("change",calc)});calc();
+</script></body></html>
